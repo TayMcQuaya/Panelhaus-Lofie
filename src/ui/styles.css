@@ -1,0 +1,349 @@
+/* Pixel-art UI that belongs to the scene: solid plum panels with notched corners and a two-tone
+   frame, chunky bevelled buttons, cream type, Smudge-yellow accents. Controls hug the corners so
+   Smudge at the bottom centre is never covered, and everything fades when the mouse rests. */
+:root {
+  --bg: #0b0914;
+  --panel: rgba(24, 18, 42, 0.88);
+  --panel-raised: #2e2449;
+  --panel-hover: #3c2f5e;
+  --panel-sunken: #120c22;
+  --edge: #4a3a6e;
+  --edge-light: #75629f;
+  --text: #f6ecd6;
+  --dim: #c4b8dc;
+  --accent: #ffd84a;
+  --accent-dark: #c99a14;
+  --pink: #ff6fae;
+  --teal: #6ee6d2;
+  --ink: #1a1426;
+  --gap: 24px;
+  --font: 'Pixelify Sans', ui-monospace, 'Courier New', monospace;
+  --notch: polygon(
+    0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
+    calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%,
+    8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px)
+  );
+  --notch-small: polygon(
+    0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 18px;
+  overflow: hidden;
+}
+
+#stage { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+#scene { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+svg { display: block; width: 24px; height: 24px; fill: currentColor; shape-rendering: crispEdges; flex-shrink: 0; }
+
+/* A pixel panel: notched corners and a two-tone inset frame (light top edge, dark inner line). */
+.pixel-panel {
+  background: var(--panel);
+  clip-path: var(--notch);
+  box-shadow:
+    inset 0 0 0 4px var(--edge),
+    inset 0 4px 0 0 var(--edge-light),
+    inset 0 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Fading UI */
+.fades, .panel { transition: opacity 0.5s ease; }
+body.idle .fades, body.idle .panel { opacity: 0; pointer-events: none; }
+body.idle { cursor: none; }
+body.ui-hidden #ui { display: none; }
+
+/* HUD, top corners */
+.hud {
+  position: fixed;
+  top: var(--gap);
+  left: var(--gap);
+  right: var(--gap);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.hud-card { display: flex; align-items: center; gap: 14px; padding: 14px 22px 14px 18px; }
+.hud-face { width: 40px; height: 40px; }
+.hud h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.1; color: var(--accent); }
+.hud p { margin: 3px 0 0; font-size: 18px; color: var(--text); }
+.hud-time { font-size: 20px; padding: 14px 22px; }
+.hud-right { display: flex; align-items: stretch; gap: 10px; }
+
+/* Panel Haus links: X, Discord, website. The HUD ignores the pointer; these opt back in. */
+.socials { gap: 4px; padding: 8px 10px; pointer-events: auto; }
+.social-link {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--dim);
+  clip-path: var(--notch-small);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.social-link:hover, .social-link:focus-visible { background: var(--panel-raised); color: var(--accent); }
+.social-link:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+/* All three icons are drawn in the same 14x14 box and shown at exactly 2px per unit, so they
+   match in size, sit dead centre, and every edge lands on a whole pixel. */
+.social-link svg { width: 28px; height: 28px; }
+/* Cuts a 1px gap between the Panel Haus bubble and the panel behind it, in the card's own colour. */
+.social-link .knockout { fill: #1b142e; transition: fill 0.15s ease; }
+.social-link:hover .knockout, .social-link:focus-visible .knockout { fill: var(--panel-raised); }
+/* The Panel Haus mark keeps its shape (a panel with a speech bubble) in the UI palette:
+   a muted panel and a Smudge-yellow bubble; the panel brightens to cream on hover. */
+.social-link .ph-bubble { fill: var(--accent); }
+.social-link:hover:has(.ph-bubble), .social-link:focus-visible:has(.ph-bubble) { color: var(--text); }
+
+/* Buttons */
+.pixel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 48px;
+  height: 48px;
+  color: var(--text);
+  background: var(--panel-raised);
+  clip-path: var(--notch-small);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.1), inset 0 -4px 0 rgba(0, 0, 0, 0.4);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.pixel-button:hover { background: var(--panel-hover); color: var(--accent); }
+.pixel-button:active { box-shadow: inset 0 4px 0 rgba(0, 0, 0, 0.4); }
+.pixel-button[aria-pressed='true'] { background: var(--accent); color: var(--ink); }
+
+/* Player, bottom left */
+.player {
+  position: fixed;
+  left: var(--gap);
+  bottom: var(--gap);
+  width: min(680px, calc(100vw - 2 * var(--gap)));
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 20px 14px 16px;
+}
+#shuffle svg { width: 22px; height: 22px; }
+
+/* The song title doubles as the button that opens the song list. */
+.np-open {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  text-align: left;
+}
+.np-open .np-caret { width: 18px; height: 18px; color: var(--dim); transition: transform 0.2s ease, color 0.15s ease; transform: rotate(180deg); }
+.np-open:hover .np-title { color: var(--accent); }
+.np-open:hover .np-caret { color: var(--accent); }
+.np-open[aria-expanded='true'] .np-caret { transform: rotate(0deg); color: var(--accent); }
+.transport { display: flex; align-items: center; gap: 6px; }
+.play { width: 58px; height: 58px; background: var(--accent); color: var(--ink); }
+.play:hover { background: #ffe57a; color: var(--ink); }
+.play svg { width: 28px; height: 28px; }
+.play .icon-pause, .play[data-playing='true'] .icon-play { display: none; }
+.play[data-playing='true'] .icon-pause { display: block; }
+
+.now-playing { flex: 1; min-width: 0; }
+.np-title { font-size: 21px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; font-size: 16px; color: var(--dim); }
+.np-artist { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 20px; }
+.np-time { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* The seek bar: a thin track with a tall invisible hit area, so it is easy to click. */
+.progress {
+  position: relative;
+  height: 8px;
+  margin-top: 8px;
+  background: var(--panel-sunken);
+  cursor: pointer;
+  touch-action: none;
+}
+.progress::before { content: ''; position: absolute; inset: -8px 0; }
+.progress:hover { background: #1c1433; }
+.progress span { display: block; height: 100%; width: 0; pointer-events: none; background: repeating-linear-gradient(90deg, var(--accent) 0 6px, var(--accent-dark) 6px 8px); }
+.progress:hover span { box-shadow: 0 0 0 1px var(--accent); }
+
+.volume { display: flex; align-items: center; gap: 8px; color: var(--dim); }
+.volume input { width: 96px; }
+.mute-button { display: grid; place-items: center; width: 36px; height: 36px; color: var(--dim); transition: color 0.15s ease; }
+.mute-button:hover { color: var(--accent); }
+.mute-button .icon-muted, .mute-button[data-muted='true'] .icon-sound { display: none; }
+.mute-button[data-muted='true'] .icon-muted { display: block; }
+.mute-button[data-muted='true'] { color: var(--pink); }
+
+/* Panel toggles, bottom right */
+.dock {
+  position: fixed;
+  right: var(--gap);
+  bottom: var(--gap);
+  display: flex;
+  gap: 6px;
+  padding: 12px;
+}
+
+/* Range sliders as chunky pixel bars */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  margin: 0;
+  background: var(--panel-sunken);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 24px;
+  background: var(--accent);
+  box-shadow: inset 0 -4px 0 var(--accent-dark), 0 0 0 3px var(--ink);
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 24px;
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+  box-shadow: inset 0 -4px 0 var(--accent-dark), 0 0 0 3px var(--ink);
+}
+
+/* Panels open above the dock */
+.panel {
+  position: fixed;
+  right: var(--gap);
+  bottom: calc(var(--gap) + 92px);
+  width: min(420px, calc(100vw - 2 * var(--gap)));
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+  padding: 24px 26px;
+}
+.panel h2 { margin: 0 0 18px; font-size: 24px; font-weight: 600; color: var(--accent); }
+.panel-note { margin: 18px 0 0; font-size: 16px; line-height: 1.45; color: var(--dim); }
+.panel code { font-family: var(--font); font-size: 16px; color: var(--teal); }
+
+/* The song list rises out of the player, bottom left, and scrolls on its own. */
+.track-picker {
+  left: var(--gap);
+  right: auto;
+  bottom: calc(var(--gap) + 104px);
+  width: min(560px, calc(100vw - 2 * var(--gap)));
+  max-height: min(62vh, 560px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 22px 18px 18px 22px;
+}
+.picker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-right: 6px; }
+.picker-head h2 { margin-bottom: 14px; }
+.picker-count { font-size: 16px; color: var(--dim); }
+.track-picker .track-list { overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: var(--edge-light) transparent; }
+.track-picker .track-list::-webkit-scrollbar { width: 8px; }
+.track-picker .track-list::-webkit-scrollbar-thumb { background: var(--edge-light); }
+.track-picker .panel-note { margin-top: 14px; }
+
+.track-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.track-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-align: left;
+  background: var(--panel-sunken);
+  clip-path: var(--notch-small);
+  transition: background 0.15s ease;
+}
+.track-row:hover, .track-row:focus-visible { background: var(--panel-raised); }
+.track-row:focus-visible { outline: none; box-shadow: inset 4px 0 0 var(--accent); }
+.track-row[aria-current='true'] { background: var(--panel-raised); }
+.track-row[aria-current='true'] .track-title { color: var(--accent); }
+.track-text { display: flex; flex-direction: column; min-width: 0; }
+.track-title { font-size: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-mood { font-size: 15px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-length { font-size: 16px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.track-list .number { color: var(--dim); font-size: 16px; }
+
+.eq { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; }
+.eq i { width: 4px; height: 30%; background: var(--accent); }
+body[data-playing='true'] .eq i { animation: eq 0.9s steps(4) infinite; }
+.eq i:nth-child(2) { animation-delay: -0.3s; }
+.eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes eq { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+
+.sliders { display: grid; gap: 18px; }
+.slider-row { display: grid; grid-template-columns: 120px 1fr 44px; align-items: center; gap: 14px; font-size: 19px; }
+.slider-row input { width: 100%; }
+.slider-value { font-size: 16px; color: var(--dim); text-align: right; }
+
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 22px; }
+.time-row { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 16px; }
+.hour-readout { font-size: 28px; font-weight: 600; color: var(--accent); }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 22px; }
+.weather-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* Wide buttons inside panels */
+.segmented .pixel-button, .chips .pixel-button { width: auto; height: 48px; font-size: 18px; }
+.weather-grid .pixel-button { width: auto; height: 60px; justify-content: flex-start; padding: 0 16px; font-size: 20px; }
+
+/* Start screen */
+.start {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 22px;
+  background: rgba(8, 6, 16, 0.45);
+  transition: opacity 0.8s ease;
+}
+.start.leaving { opacity: 0; pointer-events: none; }
+.start-button { display: grid; gap: 12px; padding: 40px 64px; text-align: center; }
+.start-title { font-size: 52px; font-weight: 600; color: var(--accent); text-shadow: 4px 4px 0 var(--pink), 7px 7px 0 var(--ink); }
+.start-sub { font-size: 26px; font-weight: 600; color: var(--text); text-shadow: 2px 2px 0 var(--ink); transition: color 0.15s ease; }
+.start-button:hover .start-sub { color: var(--accent); }
+.start-foot { margin: 0; font-size: 24px; font-weight: 600; color: var(--text); text-shadow: 2px 2px 0 var(--ink), -1px -1px 0 var(--ink); }
+
+.hint { position: fixed; left: 50%; top: var(--gap); transform: translateX(-50%); padding: 14px 24px; font-size: 18px; }
+
+/* Only while the controls are hidden: a quiet corner button to bring them back. */
+.show-ui { position: fixed; right: var(--gap); bottom: var(--gap); display: none; opacity: 0.35; transition: opacity 0.2s ease; }
+.show-ui:hover, .show-ui:focus-visible { opacity: 1; }
+body.ui-hidden .show-ui { display: inline-flex; }
+
+@media (max-width: 1100px) {
+  :root { --gap: 16px; }
+  .hud h1 { font-size: 20px; }
+  .hud p, .hud-time { font-size: 16px; }
+  .player { width: min(540px, calc(100vw - 2 * var(--gap))); }
+  .volume { display: none; }
+}
+
+@media (max-width: 760px) {
+  .hud-time { display: none; }
+  .player { bottom: calc(var(--gap) + 84px); }
+  .dock { left: var(--gap); right: auto; }
+  .panel { bottom: calc(var(--gap) + 190px); }
+  .start-title { font-size: 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

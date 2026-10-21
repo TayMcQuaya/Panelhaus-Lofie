@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smudge's Workshop</title>
+    <meta name="description" content="Smudge the sponge draws comics in his cozy workshop while lofi plays." />
+    <meta name="theme-color" content="#0b0914" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  </head>
+  <body>
+    <main id="stage">
+      <canvas id="scene" aria-label="Smudge the sponge drawing comics at his desk in a cozy workshop"></canvas>
+    </main>
+
+    <div id="ui">
+      <header class="hud fades">
+        <div class="hud-card pixel-panel">
+          <svg class="hud-face" viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#3d260c" d="M5 1h6v1h2v2h1v2h1v4h-1v2h-1v2h-2v1h-6v-1h-2v-2h-1v-2h-1v-4h1v-2h1v-2h2z" />
+            <path fill="#ffd84a" d="M5 2h6v1h1v1h1v2h1v4h-1v2h-1v1h-1v1h-6v-1h-1v-1h-1v-2h-1v-4h1v-2h1v-1h1z" />
+            <path fill="#e8b02a" d="M3 10h1v1h1v1h2v1h-2v-1h-1v-1h-1zM12 6h1v4h-1z" />
+            <path fill="#fff0a0" d="M5 3h2v1h-2z" />
+            <path fill="#1a1426" d="M6 6h1v2h-1zM10 6h1v2h-1zM6 10h5v1h-1v1h-3v-1h-1z" />
+            <path fill="#ff8a9a" d="M8 11h2v1h-2z" />
+          </svg>
+          <div>
+            <h1>Smudge's Workshop</h1>
+            <p id="status">settling in…</p>
+          </div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-card hud-time pixel-panel" id="time-label">--:--</div>
+          <nav class="hud-card socials pixel-panel" aria-label="Panel Haus links">
+            <a class="social-link" href="https://panel.haus" target="_blank" rel="noopener noreferrer" aria-label="Visit panel.haus" title="panel.haus">
+              <svg viewBox="1 1 14 14" aria-hidden="true">
+                <path d="M1 4h11v11h-11z" />
+                <path class="knockout" d="M5 0h11v11h-6v2h-1v1h-2v-3h-2z" />
+                <path class="ph-bubble" d="M6 1h9v9h-6v2h-1v1h-1v-3h-1z" />
+              </svg>
+            </a>
+            <a class="social-link" href="https://discord.gg/panelhaus" target="_blank" rel="noopener noreferrer" aria-label="Join the Panel Haus Discord" title="Join us on Discord">
+              <svg viewBox="1 1 14 14" aria-hidden="true"><path fill-rule="evenodd" d="M4 2h2v1h4v-1h2v1h1v1h1v2h1v7h-1v1h-2v1h-1v-1h-6v1h-1v-1h-2v-1h-1v-7h1v-2h1v-1h1zM5 7v3h2v-3zM9 7v3h2v-3z" /></svg>
+            </a>
+            <a class="social-link" href="https://x.com/panelhausapp" target="_blank" rel="noopener noreferrer" aria-label="Panel Haus on X (@panelhausapp)" title="@panelhausapp on X">
+              <svg viewBox="1 1 14 14" aria-hidden="true"><path d="M1 1h4.5l9.5 14h-4.5zM12.5 1h2.5l-11.5 14h-2.5z" /></svg>
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <section class="panel track-picker pixel-panel" id="panel-music" hidden aria-labelledby="music-heading">
+        <header class="picker-head">
+          <h2 id="music-heading">Smudge FM</h2>
+          <span class="picker-count" id="track-count"></span>
+        </header>
+        <ol id="track-list" class="track-list" aria-labelledby="music-heading"></ol>
+        <p class="panel-note">Played live in your browser. Add your own tracks in <code>public/music/tracks.json</code>.</p>
+      </section>
+
+      <section class="panel pixel-panel" id="panel-ambience" hidden aria-labelledby="ambience-heading">
+        <h2 id="ambience-heading">Ambience</h2>
+        <div id="ambience-sliders" class="sliders"></div>
+      </section>
+
+      <section class="panel pixel-panel" id="panel-time" hidden aria-labelledby="time-heading">
+        <h2 id="time-heading">Time of day</h2>
+        <div class="segmented" id="time-modes" role="group" aria-label="Time mode">
+          <button type="button" class="pixel-button" data-mode="auto">Auto</button>
+          <button type="button" class="pixel-button" data-mode="cycle">Cycle</button>
+          <button type="button" class="pixel-button" data-mode="manual">Manual</button>
+        </div>
+        <label class="time-row">
+          <span class="hour-readout" id="hour-readout">21:00</span>
+          <input id="hour-slider" type="range" min="0" max="23.95" step="0.05" aria-label="Hour of day" />
+        </label>
+        <div class="chips" id="time-presets">
+          <button type="button" class="pixel-button" data-hour="6.4">Dawn</button>
+          <button type="button" class="pixel-button" data-hour="12">Day</button>
+          <button type="button" class="pixel-button" data-hour="18.6">Dusk</button>
+          <button type="button" class="pixel-button" data-hour="22">Night</button>
+        </div>
+        <p class="panel-note" id="time-note"></p>
+      </section>
+
+      <section class="panel pixel-panel" id="panel-weather" hidden aria-labelledby="weather-heading">
+        <h2 id="weather-heading">Weather</h2>
+        <div class="weather-grid" id="weather-buttons">
+          <button type="button" class="pixel-button" data-weather="clear">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v2h-2zM7 13h2v2h-2zM1 7h2v2h-2zM13 7h2v2h-2zM3 3h2v2h-2zM11 3h2v2h-2zM3 11h2v2h-2zM11 11h2v2h-2zM6 4h4v1h1v1h1v4h-1v1h-1v1h-4v-1h-1v-1h-1v-4h1v-1h1z" /></svg>
+            Clear
+          </button>
+          <button type="button" class="pixel-button" data-weather="rain">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4v1h1v1h2v1h1v3h-1v1h-11v-1h-1v-2h1v-1h1v-1h1v-1h2zM3 10h1v2h-1zM7 10h1v2h-1zM11 10h1v2h-1zM5 13h1v2h-1zM9 13h1v2h-1z" /></svg>
+            Rain
+          </button>
+          <button type="button" class="pixel-button" data-weather="storm">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1h4v1h1v1h2v1h1v3h-1v1h-11v-1h-1v-2h1v-1h1v-1h1v-1h2zM8 9h3v1h-1v1h2v1h-1v1h-1v1h-1v1h-1v-2h1v-1h-2v-1h1z" /></svg>
+            Storm
+          </button>
+          <button type="button" class="pixel-button" data-weather="snow">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v14h-2zM1 7h14v2h-14zM3 3h2v2h-2zM11 3h2v2h-2zM3 11h2v2h-2zM11 11h2v2h-2zM5 5h2v2h-2zM9 5h2v2h-2zM5 9h2v2h-2zM9 9h2v2h-2z" /></svg>
+            Snow
+          </button>
+        </div>
+        <p class="panel-note">Each weather sets a gentle ambience.<br />The sliders still have the last word.</p>
+      </section>
+
+      <footer class="player pixel-panel fades" id="player">
+        <div class="transport">
+          <button type="button" id="prev" class="pixel-button" aria-label="Previous track" title="Previous (←)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h2v10h-2zM12 3h1v10h-1v-1h-1v-1h-1v-1h-1v-1h-1v-2h1v-1h1v-1h1v-1h1v-1z" /></svg>
+          </button>
+          <button type="button" id="play" class="pixel-button play" aria-label="Play" title="Play / pause (Space)">
+            <svg class="icon-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3h2v1h1v1h2v1h1v1h1v2h-1v1h-1v1h-2v1h-1v1h-2z" /></svg>
+            <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10h-3zM9 3h3v10h-3z" /></svg>
+          </button>
+          <button type="button" id="next" class="pixel-button" aria-label="Next track" title="Next (→)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 3h2v10h-2zM3 3h1v1h1v1h1v1h1v1h1v2h-1v1h-1v1h-1v1h-1v1h-1z" /></svg>
+          </button>
+          <button type="button" id="shuffle" class="pixel-button" aria-label="Shuffle" aria-pressed="false" title="Shuffle (S)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 4h3v1h1v1h1v1h-1v-1h-1v-1h-3zM1 11h3v-1h1v-1h1v-1h1v-1h1v-1h1v-1h2v-2h1v1h1v1h1v1h-1v1h-1v1h-1v-2h-2v1h-1v1h-1v1h-1v1h-1v1h-1v1h-3zM8 9h1v1h1v1h1v-2h1v1h1v1h1v1h-1v1h-1v1h-1v-2h-2v-1h-1z" /></svg>
+          </button>
+        </div>
+        <div class="now-playing">
+          <button type="button" class="np-open" id="np-open" aria-haspopup="true" aria-expanded="false" aria-controls="panel-music" title="Browse all songs (M)">
+            <span class="np-title" id="np-title">—</span>
+            <svg class="np-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9h2v-1h1v-1h1v-1h2v1h1v1h1v1h2v2h-2v-1h-1v-1h-2v1h-1v1h-2z" /></svg>
+          </button>
+          <div class="np-meta">
+            <span class="np-artist" id="np-artist"></span>
+            <span class="np-time" id="np-time">0:00 / 0:00</span>
+          </div>
+          <div class="progress" id="seek" role="slider" tabindex="0" aria-label="Song position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Click to jump to that part of the song">
+            <span id="np-progress"></span>
+          </div>
+        </div>
+        <div class="volume">
+          <button type="button" id="mute" class="mute-button" aria-label="Mute music" aria-pressed="false" title="Mute / unmute">
+            <svg class="icon-sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3v-1h1v-1h1v-1h1v10h-1v-1h-1v-1h-1v-1h-3zM10 6h1v4h-1zM12 4h1v8h-1z" /></svg>
+            <svg class="icon-muted" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3v-1h1v-1h1v-1h1v10h-1v-1h-1v-1h-1v-1h-3zM10 6h1v1h1v1h1v-1h1v-1h1v1h-1v1h-1v1h1v1h1v1h-1v-1h-1v-1h-1v1h-1v1h-1v-1h1v-1h1v-1h-1v-1h-1z" /></svg>
+          </button>
+          <input id="volume" type="range" min="0" max="1" step="0.01" aria-label="Music volume" />
+        </div>
+      </footer>
+
+      <nav class="dock pixel-panel fades" aria-label="Panels">
+          <button type="button" class="pixel-button" data-panel="music" aria-label="Track list" title="Track list (M)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2h8v9h-1v1h-2v-1h-1v-2h1v-1h2v-4h-5v8h-1v1h-2v-1h-1v-2h1v-1h2z" /></svg>
+          </button>
+          <button type="button" class="pixel-button" data-panel="ambience" aria-label="Ambience" title="Ambience (A)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h1v4h1v3h-1v5h-1v-5h-1v-3h1zM8 2h1v8h1v3h-1v1h-1v-1h-1v-3h1zM12 2h1v1h1v3h-1v8h-1v-8h-1v-3h1z" /></svg>
+          </button>
+          <button type="button" class="pixel-button" data-panel="time" aria-label="Time of day" title="Time of day (T)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 1h6v1h2v2h1v2h1v4h-1v2h-1v2h-2v1h-6v-1h-2v-2h-1v-2h-1v-4h1v-2h1v-2h2zM5 3v1h-1v2h-1v4h1v2h1v1h6v-1h1v-2h1v-4h-1v-2h-1v-1zM7 4h2v4h3v2h-5z" /></svg>
+          </button>
+          <button type="button" class="pixel-button" data-panel="weather" aria-label="Weather" title="Weather (W)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2h4v1h1v1h2v1h1v3h-1v1h-11v-1h-1v-2h1v-1h1v-1h1v-1h2zM3 11h1v2h-1zM7 11h1v2h-1zM11 11h1v2h-1z" /></svg>
+          </button>
+          <button type="button" class="pixel-button" id="hide-ui" aria-label="Hide controls" title="Hide controls (H)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 4h6v1h2v1h1v1h1v2h-1v1h-1v1h-2v1h-6v-1h-2v-1h-1v-1h-1v-2h1v-1h1v-1h2zM7 6v1h-1v2h1v1h2v-1h1v-2h-1v-1z" /></svg>
+          </button>
+          <button type="button" class="pixel-button" id="fullscreen" aria-label="Fullscreen" title="Fullscreen (F)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h5v2h-3v3h-2zM9 2h5v5h-2v-3h-3zM2 9h2v3h3v2h-5zM12 9h2v5h-5v-2h3z" /></svg>
+          </button>
+      </nav>
+    </div>
+
+    <div id="start" class="start">
+      <button type="button" id="start-button" class="start-button pixel-panel">
+        <span class="start-title">Smudge's Workshop</span>
+        <span class="start-sub">click to come in</span>
+      </button>
+      <p class="start-foot">lofi · comics · rain on the window</p>
+    </div>
+    <div id="hint" class="hint pixel-panel" hidden>Press H or the eye button to bring the controls back</div>
+    <button type="button" id="show-ui" class="show-ui pixel-button" aria-label="Show controls" title="Show controls (H)">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 4h6v1h2v1h1v1h1v2h-1v1h-1v1h-2v1h-6v-1h-2v-1h-1v-1h-1v-2h1v-1h1v-1h2zM7 6v1h-1v2h1v1h2v-1h1v-2h-1v-1z" /></svg>
+    </button>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
