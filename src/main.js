@@ -7,13 +7,36 @@ import { createMusicPlayer } from './audio/musicPlayer.js'
 import { attachDisplay, H, makeLayer, W } from './engine/canvas.js'
 import { createScene } from './scene/scene.js'
 import { createControls } from './ui/controls.js'
-import { loadSettings, saveSettings, TIME_MODES, WEATHERS } from './ui/settings.js'
+import { loadSettings, saveSettings, TIME_MODES, WEATHER_MODES, WEATHERS } from './ui/settings.js'
 
 const WEATHER_AMBIENCE = {
   clear: { rain: 0, thunder: 0 },
   rain: { rain: 0.3, thunder: 0 },
   storm: { rain: 0.35, thunder: 0.3 },
   snow: { rain: 0, thunder: 0 },
+}
+
+// Auto weather: how long each weather lasts (minutes) and what it can turn into next, with odds.
+// Storms only grow out of rain and settle back into it, and snow clears up before it rains.
+const WEATHER_MINUTES = { clear: [6, 14], rain: [4, 9], storm: [1.5, 3.5], snow: [4, 9] }
+const WEATHER_NEXT = {
+  clear: [['rain', 0.7], ['snow', 0.3]],
+  rain: [['clear', 0.6], ['storm', 0.4]],
+  storm: [['rain', 1]],
+  snow: [['clear', 1]],
+}
+// Seconds the scene takes to fade into a new weather: slow on its own, quick when you pick one.
+const AUTO_FADE = 30
+const PICKED_FADE = 3
+
+const holdFor = (weather) => {
+  const [lo, hi] = WEATHER_MINUTES[weather]
+  return (lo + Math.random() * (hi - lo)) * 60
+}
+function pickNextWeather(weather) {
+  let roll = Math.random()
+  const options = WEATHER_NEXT[weather]
+  return (options.find(([, odds]) => (roll -= odds) < 0) ?? options[options.length - 1])[0]
 }
 
 // Query parameters for testing and screenshots: ?t=22&weather=rain&progress=0.5&speed=4&ui=0
@@ -30,6 +53,7 @@ const forcedHour = numberParam('t', 0, 23.99)
 if (forcedHour !== null) Object.assign(settings, { timeMode: 'manual', manualHour: forcedHour })
 if (WEATHERS.includes(params.get('weather'))) {
   settings.weather = params.get('weather')
+  settings.weatherMode = 'fixed'
   Object.assign(settings.ambience, WEATHER_AMBIENCE[settings.weather])
 }
 
@@ -43,12 +67,14 @@ const world = {
   hour: settings.timeMode === 'manual' ? settings.manualHour : localHour(),
   timeMode: settings.timeMode,
   weather: settings.weather,
+  weatherFade: PICKED_FADE,
   music: { playing: false, beatPhase: 0 },
   env: null,
   flash: 0,
 }
 
 const engine = createAudioEngine()
+engine.setAmbienceMuted(settings.ambienceMuted)
 const player = createMusicPlayer(engine)
 const ambience = createAmbience(engine)
 const scene = createScene({
@@ -67,7 +93,13 @@ const persist = () => {
 const app = {
   settings,
   setMusicVolume(v) { settings.musicVolume = v; player.setVolume(v); persist() },
-  setAmbience(id, v) { settings.ambience[id] = v; ambience.setVolume(id, v); persist() },
+  setAmbience(id, v, glide) { settings.ambience[id] = v; ambience.setVolume(id, v, glide); persist() },
+  setAmbienceMuted(muted) {
+    settings.ambienceMuted = muted
+    engine.setAmbienceMuted(muted)
+    controls.renderSettings()
+    persist()
+  },
   setTimeMode(mode) {
     if (!TIME_MODES.includes(mode)) return
     settings.timeMode = mode
@@ -84,15 +116,39 @@ const app = {
     controls.renderSettings()
     persist()
   },
+  // Picking a weather keeps it until you pick another or switch back to auto.
   setWeather(weather) {
     if (!WEATHERS.includes(weather)) return
-    settings.weather = weather
-    world.weather = weather
-    for (const [id, v] of Object.entries(WEATHER_AMBIENCE[weather])) app.setAmbience(id, v)
+    settings.weatherMode = 'fixed'
+    changeWeather(weather, PICKED_FADE)
     if (weather === 'storm') setTimeout(scene.strikeLightning, 900)
+  },
+  // 'auto' lets the weather wander from here; 'fixed' keeps whatever is showing now.
+  setWeatherMode(mode) {
+    if (!WEATHER_MODES.includes(mode)) return
+    settings.weatherMode = mode
+    weatherChangeIn = holdFor(world.weather)
     controls.renderSettings()
     persist()
   },
+}
+
+let weatherChangeIn = holdFor(world.weather)
+
+function changeWeather(weather, fade) {
+  settings.weather = weather
+  world.weather = weather
+  world.weatherFade = fade
+  weatherChangeIn = holdFor(weather)
+  for (const [id, v] of Object.entries(WEATHER_AMBIENCE[weather])) app.setAmbience(id, v, fade / 3)
+  controls.renderSettings()
+  persist()
+}
+
+function advanceWeather(dt) {
+  if (settings.weatherMode !== 'auto') return
+  weatherChangeIn -= dt
+  if (weatherChangeIn <= 0) changeWeather(pickNextWeather(world.weather), AUTO_FADE)
 }
 
 const controls = createControls({ player, app })
@@ -184,6 +240,7 @@ function frame(now) {
   const dt = Math.min(0.1, Math.max(0, now - last) / 1000) * speed
   last = now
   player.update()
+  advanceWeather(dt)
   world.music.playing = player.playing
   world.music.beatPhase = player.beatPhase()
   const steps = Math.max(1, Math.ceil(dt / (1 / 60)))

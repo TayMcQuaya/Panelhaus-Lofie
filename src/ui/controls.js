@@ -24,6 +24,8 @@ export function createControls({ player, app }) {
     $('np-open').setAttribute('aria-expanded', String(openPanel === 'music'))
     // Opening the song list lands on the song that is playing.
     if (openPanel === 'music') {
+      viewStation = player.station
+      renderTracks()
       const current = $('track-list').querySelector('[aria-current="true"]')
       current?.scrollIntoView({ block: 'nearest' })
       current?.focus({ preventScroll: true })
@@ -75,17 +77,53 @@ export function createControls({ player, app }) {
 
   // One row per song: number (or a little equaliser on the one playing), title over its style,
   // and its length. Clicking a row plays it.
+  // Which station's songs the list shows. It follows the playing song, but you can browse other
+  // stations with the tabs without changing what plays.
+  let viewStation = null
+
+  function renderStationTabs() {
+    const tabs = $('station-tabs')
+    tabs.hidden = player.stations.length < 2
+    tabs.replaceChildren(...player.stations.map((station) => {
+      const tab = document.createElement('button')
+      tab.type = 'button'
+      tab.className = 'station-tab'
+      tab.setAttribute('role', 'tab')
+      tab.setAttribute('aria-selected', String(station.id === viewStation))
+      // One line per tab: a pulsing dot when this station is on air, the name, and a song count.
+      const onAir = station.id === player.station && player.playing
+      if (onAir) {
+        const dot = span('station-live', '')
+        dot.setAttribute('role', 'img')
+        dot.setAttribute('aria-label', 'on air')
+        tab.append(dot)
+      }
+      tab.append(span('station-name', station.name), span('station-count', String(player.stationIndices(station.id).length)))
+      tab.title = onAir ? `${station.name} · on air` : station.name
+      tab.addEventListener('click', () => {
+        viewStation = station.id
+        renderTracks()
+      })
+      return tab
+    }))
+  }
+
   function renderTracks() {
     const list = $('track-list')
-    $('track-count').textContent = `${player.tracks.length} songs${player.shuffle ? ' · shuffle on' : ''}`
-    list.replaceChildren(...player.tracks.map((track, i) => {
+    if (!player.stations.some((s) => s.id === viewStation)) viewStation = player.station
+    renderStationTabs()
+    const station = player.stations.find((s) => s.id === viewStation)
+    const indices = player.stationIndices(viewStation)
+    $('track-count').textContent = [station?.about, player.shuffle ? 'shuffle on' : ''].filter(Boolean).join(' · ')
+    list.replaceChildren(...indices.map((i, position) => {
+      const track = player.tracks[i]
       const item = document.createElement('li')
       const button = document.createElement('button')
       button.type = 'button'
       button.className = 'track-row'
       const current = i === player.index
       button.setAttribute('aria-current', String(current))
-      const lead = current ? span('eq', '') : span('number', String(i + 1).padStart(2, '0'))
+      const lead = current ? span('eq', '') : span('number', String(position + 1).padStart(2, '0'))
       if (current) lead.append(...[0, 1, 2].map(() => document.createElement('i')))
       const text = document.createElement('span')
       text.className = 'track-text'
@@ -144,7 +182,12 @@ export function createControls({ player, app }) {
     const value = document.createElement('span')
     value.className = 'slider-value'
     const showValue = () => { value.textContent = String(Math.round(Number(input.value) * 100)) }
-    input.addEventListener('input', () => { app.setAmbience(id, Number(input.value)); showValue() })
+    input.addEventListener('input', () => {
+      // Reaching for a slider means you want to hear it, so it lifts the effects mute.
+      if (app.settings.ambienceMuted) app.setAmbienceMuted(false)
+      app.setAmbience(id, Number(input.value))
+      showValue()
+    })
     sliders[id] = { input, showValue, row }
     showValue()
     row.append(name, input, value)
@@ -165,11 +208,34 @@ export function createControls({ player, app }) {
   for (const button of document.querySelectorAll('#weather-buttons button')) {
     button.addEventListener('click', () => app.setWeather(button.dataset.weather))
   }
+  for (const button of document.querySelectorAll('#weather-modes button')) {
+    button.addEventListener('click', () => app.setWeatherMode(button.dataset.mode))
+  }
+
+  const effectsToggle = $('ambience-mute')
+  effectsToggle.addEventListener('click', () => app.setAmbienceMuted(!app.settings.ambienceMuted))
+  const ambienceDockButton = document.querySelector('[data-panel="ambience"]')
+
+  function renderEffectsMute(muted) {
+    effectsToggle.setAttribute('aria-pressed', String(muted))
+    effectsToggle.dataset.muted = String(muted)
+    $('ambience-mute-label').textContent = muted ? 'Effects off' : 'Effects on'
+    effectsToggle.title = muted ? 'Turn sound effects back on (E)' : 'Mute sound effects (E)'
+    $('ambience-sliders').classList.toggle('muted', muted)
+    ambienceDockButton.dataset.muted = String(muted)
+    ambienceDockButton.setAttribute('aria-label', muted ? 'Ambience, sound effects muted' : 'Ambience')
+  }
 
   function renderSettings() {
     const s = app.settings
+    renderEffectsMute(s.ambienceMuted)
     for (const button of document.querySelectorAll('#time-modes button')) button.setAttribute('aria-pressed', String(button.dataset.mode === s.timeMode))
     for (const button of document.querySelectorAll('#weather-buttons button')) button.setAttribute('aria-pressed', String(button.dataset.weather === s.weather))
+    for (const button of document.querySelectorAll('#weather-modes button')) button.setAttribute('aria-pressed', String(button.dataset.mode === s.weatherMode))
+    const weatherName = s.weather[0].toUpperCase() + s.weather.slice(1)
+    $('weather-note').textContent = s.weatherMode === 'auto'
+      ? `${weatherName} for now. It shifts on its own every few minutes; pick one to keep it.`
+      : `Staying ${s.weather === 'clear' ? 'clear' : `on ${weatherName}`} until you change it.`
     for (const { id, weathers } of AMBIENCE_LAYERS) {
       sliders[id].row.hidden = Boolean(weathers) && !weathers.includes(s.weather)
       if (document.activeElement === sliders[id].input) continue
@@ -204,6 +270,7 @@ export function createControls({ player, app }) {
     ArrowLeft: () => player.prev(),
     m: () => showPanel('music'),
     s: () => player.toggleShuffle(),
+    e: () => app.setAmbienceMuted(!app.settings.ambienceMuted),
     a: () => showPanel('ambience'),
     t: () => showPanel('time'),
     w: () => showPanel('weather'),
@@ -246,7 +313,9 @@ export function createControls({ player, app }) {
     const fraction = player.progress()
     $('np-progress').style.width = `${(fraction * 100).toFixed(1)}%`
     seekBar.setAttribute('aria-valuenow', String(Math.round(fraction * 100)))
-    $('np-time').textContent = `${clock(fraction * player.duration())} / ${clock(player.duration())}`
+    $('np-time').textContent = player.buffering && player.playing
+      ? 'buffering…'
+      : `${clock(fraction * player.duration())} / ${clock(player.duration())}`
   }
 
   renderPlayer()

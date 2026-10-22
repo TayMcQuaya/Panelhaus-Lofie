@@ -170,9 +170,10 @@ export function createAmbience(engine) {
     }
   }
 
-  function setVolume(id, value) {
+  // `glide` is the fade's time constant in seconds (about a third of the time it takes to arrive).
+  function setVolume(id, value, glide = 0.15) {
     volumes[id] = value
-    if (outputs[id]) outputs[id].gain.setTargetAtTime(value, ctx.currentTime, 0.15)
+    if (outputs[id]) outputs[id].gain.setTargetAtTime(value, ctx.currentTime, glide)
   }
 
   function thunderClap(delaySeconds) {

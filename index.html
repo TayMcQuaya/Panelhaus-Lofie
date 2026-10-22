@@ -54,14 +54,22 @@
 
       <section class="panel track-picker pixel-panel" id="panel-music" hidden aria-labelledby="music-heading">
         <header class="picker-head">
-          <h2 id="music-heading">Smudge FM</h2>
+          <h2 id="music-heading">Music</h2>
           <span class="picker-count" id="track-count"></span>
         </header>
+        <div class="station-tabs" id="station-tabs" role="tablist" aria-label="Stations"></div>
         <ol id="track-list" class="track-list" aria-labelledby="music-heading"></ol>
       </section>
 
       <section class="panel pixel-panel" id="panel-ambience" hidden aria-labelledby="ambience-heading">
-        <h2 id="ambience-heading">Ambience</h2>
+        <header class="panel-head">
+          <h2 id="ambience-heading">Ambience</h2>
+          <button type="button" id="ambience-mute" class="pixel-button effects-toggle" aria-pressed="false" title="Mute sound effects (E)">
+            <svg class="icon-sound" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3v-1h1v-1h1v-1h1v10h-1v-1h-1v-1h-1v-1h-3zM10 6h1v4h-1zM12 4h1v8h-1z" /></svg>
+            <svg class="icon-muted" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3v-1h1v-1h1v-1h1v10h-1v-1h-1v-1h-1v-1h-3zM10 6h1v1h1v1h1v-1h1v-1h1v1h-1v1h-1v1h1v1h1v1h-1v-1h-1v-1h-1v1h-1v1h-1v-1h1v-1h1v-1h-1v-1h-1z" /></svg>
+            <span id="ambience-mute-label">Effects on</span>
+          </button>
+        </header>
         <div id="ambience-sliders" class="sliders"></div>
       </section>
 
@@ -87,6 +95,10 @@
 
       <section class="panel pixel-panel" id="panel-weather" hidden aria-labelledby="weather-heading">
         <h2 id="weather-heading">Weather</h2>
+        <div class="segmented two" id="weather-modes" role="group" aria-label="Weather mode">
+          <button type="button" class="pixel-button" data-mode="auto">Auto</button>
+          <button type="button" class="pixel-button" data-mode="fixed">Stay</button>
+        </div>
         <div class="weather-grid" id="weather-buttons">
           <button type="button" class="pixel-button" data-weather="clear">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v2h-2zM7 13h2v2h-2zM1 7h2v2h-2zM13 7h2v2h-2zM3 3h2v2h-2zM11 3h2v2h-2zM3 11h2v2h-2zM11 11h2v2h-2zM6 4h4v1h1v1h1v4h-1v1h-1v1h-4v-1h-1v-1h-1v-4h1v-1h1z" /></svg>
@@ -105,7 +117,7 @@
             Snow
           </button>
         </div>
-        <p class="panel-note">Each weather sets a gentle ambience.<br />The sliders still have the last word.</p>
+        <p class="panel-note" id="weather-note"></p>
       </section>
 
       <footer class="player pixel-panel fades" id="player">

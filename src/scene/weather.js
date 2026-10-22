@@ -4,6 +4,25 @@ import { createRng } from '../engine/rng.js'
 import { GLASS, PANES } from './layout.js'
 
 const RAIN_COUNT = { rain: 110, storm: 200 }
+const SNOW_COUNT = 90
+
+// What a weather mix (shares of each weather, summing to 1) looks like: how many drops and flakes,
+// how slanted the rain is, and how strongly the glass is wet or frosted (0-1).
+function amounts(mix) {
+  const share = (w) => mix[w] ?? 0
+  const storm = share('storm')
+  const wet = share('rain') + storm
+  const snowing = share('snow')
+  return {
+    storm,
+    wet: wet > 0.01 ? wet : 0,
+    snowing: snowing > 0.01 ? snowing : 0,
+    drops: Math.round(RAIN_COUNT.rain * share('rain') + RAIN_COUNT.storm * storm),
+    flakes: Math.round(SNOW_COUNT * snowing),
+    wind: 0.18 + 0.27 * storm,
+  }
+}
+
 const insideGlass = (x, y) => PANES.some((p) => x >= p.x && x < p.x + p.w && y >= p.y && y < p.y + p.h)
 
 export function createWeather(onThunder) {
@@ -22,7 +41,7 @@ export function createWeather(onThunder) {
     size: rng.chance(0.25) ? 2 : 1,
   })
   const rain = Array.from({ length: RAIN_COUNT.storm }, () => spawnDrop(true))
-  const snow = Array.from({ length: 90 }, () => spawnFlake(true))
+  const snow = Array.from({ length: SNOW_COUNT }, () => spawnFlake(true))
   const glassDrops = Array.from({ length: 16 }, () => {
     const pane = rng.pick(PANES)
     return { x: pane.x + rng.int(2, pane.w - 3), y: pane.y + rng.int(2, pane.h - 6), pane, sliding: 0, trail: 0, wait: rng.range(1, 8) }
@@ -46,17 +65,16 @@ export function createWeather(onThunder) {
     onThunder?.(rng.range(0.5, 2.2))
   }
 
-  function update(dt, weather) {
-    const wet = weather === 'rain' || weather === 'storm'
-    const count = RAIN_COUNT[weather] ?? 0
-    const wind = weather === 'storm' ? 0.45 : 0.18
-    for (let i = 0; i < count; i++) {
-      const d = rain[i]
-      d.y += d.speed * dt * (weather === 'storm' ? 1.25 : 1)
+  // Everything moves all the time; the weather mix only decides how much of it is drawn, so rain
+  // thickens and thins gradually while the weather changes.
+  function update(dt, weather, mix) {
+    const { wet, snowing, wind, storm } = amounts(mix)
+    for (const d of rain) {
+      d.y += d.speed * dt * (1 + 0.25 * storm)
       d.x += d.speed * dt * wind
       if (d.y > GLASS.y + GLASS.h + 4) Object.assign(d, spawnDrop(false))
     }
-    if (weather === 'snow') {
+    if (snowing) {
       for (const f of snow) {
         f.y += f.speed * dt
         f.drift += dt * 1.3
@@ -89,7 +107,8 @@ export function createWeather(onThunder) {
     if (bolt) { bolt.life -= dt; if (bolt.life <= 0) bolt = null }
   }
 
-  function drawOutside(ctx, weather) {
+  function drawOutside(ctx, mix) {
+    const { drops, wind, flakes } = amounts(mix)
     if (bolt) {
       for (let i = 1; i < bolt.points.length; i++) {
         const [ax, ay] = bolt.points[i - 1], [bx, by] = bolt.points[i]
@@ -101,20 +120,19 @@ export function createWeather(onThunder) {
       rect(ctx, GLASS.x, GLASS.y, GLASS.w, GLASS.h, '#e6e8ff')
       ctx.globalAlpha = 1
     }
-    const count = RAIN_COUNT[weather] ?? 0
-    if (count) {
+    if (drops) {
       ctx.globalAlpha = 0.5
       ctx.fillStyle = '#c4d4ec'
-      const wind = weather === 'storm' ? 0.45 : 0.18
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < drops; i++) {
         const d = rain[i]
         for (let k = 0; k < d.len; k++) ctx.fillRect(Math.round(d.x + k * wind), Math.round(d.y + k), 1, 1)
       }
       ctx.globalAlpha = 1
     }
-    if (weather === 'snow') {
+    if (flakes) {
       ctx.fillStyle = '#f4f6ff'
-      for (const f of snow) {
+      for (let i = 0; i < flakes; i++) {
+        const f = snow[i]
         ctx.globalAlpha = f.size === 2 ? 0.95 : 0.7
         ctx.fillRect(Math.round(f.x), Math.round(f.y), f.size, f.size)
       }
@@ -123,28 +141,29 @@ export function createWeather(onThunder) {
   }
 
   // Drawn after lighting so the glass catches light from outside, not from the lamp.
-  function drawGlass(ctx, weather) {
-    if (weather === 'rain' || weather === 'storm') {
+  function drawGlass(ctx, mix) {
+    const { wet, snowing } = amounts(mix)
+    if (wet) {
       for (const g of glassDrops) {
         const x = Math.round(g.x), y = Math.round(g.y)
         if (!insideGlass(x, y)) continue
-        ctx.globalAlpha = 0.22
+        ctx.globalAlpha = 0.22 * wet
         for (let k = 1; k <= g.trail; k++) if (insideGlass(x, y - k)) px(ctx, x, y - k, '#dfe9ff')
-        ctx.globalAlpha = 0.55
+        ctx.globalAlpha = 0.55 * wet
         rect(ctx, x, y, 2, 2, '#b8cae6')
-        ctx.globalAlpha = 0.9
+        ctx.globalAlpha = 0.9 * wet
         px(ctx, x, y, '#ffffff')
       }
       ctx.globalAlpha = 1
     }
-    if (weather === 'snow') {
+    if (snowing) {
       ctx.fillStyle = '#eef3ff'
       for (const p of PANES) {
         for (let j = 0; j < 9; j++) {
           for (let i = 0; i < 12 - j; i++) {
             const seedValue = ((i * 73 + j * 151 + p.x) % 17) / 17
             if (seedValue > 0.35 + j * 0.06) continue
-            ctx.globalAlpha = 0.5
+            ctx.globalAlpha = 0.5 * snowing
             ctx.fillRect(p.x + i, p.y + p.h - 1 - j, 1, 1)
             ctx.fillRect(p.x + p.w - 1 - i, p.y + p.h - 1 - j, 1, 1)
           }

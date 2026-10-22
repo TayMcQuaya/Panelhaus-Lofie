@@ -12,6 +12,7 @@ import { createRoom, SHELL_MARGIN } from './room.js'
 import { createSky } from './sky.js'
 import { timeOfDay } from './timeOfDay.js'
 import { createWeather } from './weather.js'
+import { WEATHERS } from '../ui/settings.js'
 
 export function createScene({ seed = 1, startProgress = 0.35, firstActivity = null, onThunder }) {
   const outside = makeLayer(W, H)
@@ -26,14 +27,28 @@ export function createScene({ seed = 1, startProgress = 0.35, firstActivity = nu
   const paper = createPaperBalls()
   const smudge = createSmudge({ corkboard: props.corkboard, particles, paper, seed, startProgress, firstActivity })
   const lamp = createSpring(-1)
+  // How much of each weather is showing. It eases toward the chosen one over world.weatherFade seconds.
+  let mix = null
+
+  function blendWeather(dt, world) {
+    mix ??= { [world.weather]: 1 }
+    const step = dt / Math.max(0.01, world.weatherFade ?? 0.01)
+    const next = Object.fromEntries(WEATHERS.map((w) => {
+      const now = mix[w] ?? 0
+      return [w, w === world.weather ? Math.min(1, now + step) : Math.max(0, now - step)]
+    }))
+    const total = Object.values(next).reduce((a, b) => a + b, 0)
+    mix = Object.fromEntries(Object.entries(next).map(([w, v]) => [w, v / total]))
+  }
 
   function update(dt, world) {
-    world.env = timeOfDay(world.hour, world.weather)
+    blendWeather(dt, world)
+    world.env = timeOfDay(world.hour, world.weather, mix)
     if (lamp.x < 0) lamp.x = world.env.lampOn ? 1 : 0
     stepSpring(lamp, world.env.lampOn ? 1 : 0, 5, dt)
     sky.update(dt, world.env)
     city.update(dt, world.env)
-    weather.update(dt, world.weather)
+    weather.update(dt, world.weather, mix)
     world.flash = weather.flash
     particles.update(dt)
     paper.update(dt)
@@ -62,7 +77,7 @@ export function createScene({ seed = 1, startProgress = 0.35, firstActivity = nu
     const o = outside.ctx
     sky.draw(o, env, world.time)
     city.draw(o, env, world.time)
-    weather.drawOutside(o, world.weather)
+    weather.drawOutside(o, mix)
 
     const s = scene.ctx
     s.clearRect(0, 0, W, H)
@@ -77,7 +92,7 @@ export function createScene({ seed = 1, startProgress = 0.35, firstActivity = nu
 
     ctx.drawImage(outside.canvas, 0, 0)
     ctx.drawImage(scene.canvas, 0, 0)
-    weather.drawGlass(ctx, world.weather)
+    weather.drawGlass(ctx, mix)
     props.drawGlow(ctx, env, Math.max(0, lamp.x), world.time)
     particles.drawGlow(ctx, env, Math.max(0, lamp.x))
   }

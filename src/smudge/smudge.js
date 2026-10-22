@@ -474,7 +474,7 @@ export function createSmudge({ corkboard, particles, paper, seed = 1, startProgr
     const arm = solveIK(sh.x, sh.y, hand.x, hand.y, ARM.upper, ARM.lower, outward, maxStretch)
     drawLimb(ctx, [sh, arm.elbow, arm.hand], 2)
     if (side === 'left' && state.mugHeld) drawMugAt(ctx, Math.round(arm.hand.x) - 3, Math.round(arm.hand.y) - 7)
-    if (state.ballIn === side) drawBall(ctx, arm.hand.x, arm.hand.y - 3)
+    if (state.ballIn === side) drawBall(ctx, arm.hand.x, arm.hand.y - 3, paper.heldVariant)
     if (side === 'right' && !state.heldPage && !state.ballIn) {
       const tipDir = facingUs() ? { x: 2, y: -3 } : { x: -PEN_OFFSET.x, y: -PEN_OFFSET.y }
       drawTool(ctx, state.tool, arm.hand.x, arm.hand.y, arm.hand.x + tipDir.x, arm.hand.y + tipDir.y)
@@ -486,7 +486,7 @@ export function createSmudge({ corkboard, particles, paper, seed = 1, startProgr
     if (!state.heldPage) return
     const hp = vec(heldPagePos)
     const s = state.pageScale
-    if (s < 0.3) { drawBall(ctx, hp.x + PAGE.w / 2, hp.y + PAGE.h / 2); return }
+    if (s < 0.3) { drawBall(ctx, hp.x + PAGE.w / 2, hp.y + PAGE.h / 2, paper.heldVariant); return }
     // Crumpling: the sheet shrinks toward its centre between his hands.
     const w = Math.max(2, Math.round(PAGE.w * s)), h = Math.max(2, Math.round(PAGE.h * (0.4 + 0.6 * s)))
     const x = Math.round(hp.x + (PAGE.w - w) / 2), y = Math.round(hp.y + (PAGE.h - h) / 2)

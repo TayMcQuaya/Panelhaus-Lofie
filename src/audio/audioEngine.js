@@ -1,8 +1,12 @@
 // One AudioContext with music and ambience buses into a gentle master compressor.
 // Browsers only allow audio after a user gesture, so `start()` is called from the first click.
+// Ambience sits well under the music: a full slider is a backdrop, never the main act.
+const AMBIENCE_LEVEL = 0.5
+
 export function createAudioEngine() {
   let ctx = null
   let master, music, ambience, ambienceOut
+  let ambienceMuted = false
 
   function start() {
     if (ctx) return ctx.resume()
@@ -14,9 +18,8 @@ export function createAudioEngine() {
     master.connect(compressor).connect(ctx.destination)
     music = ctx.createGain()
     ambience = ctx.createGain()
-    // Ambience sits well under the music: a full slider is a backdrop, never the main act.
     ambienceOut = ctx.createGain()
-    ambienceOut.gain.value = 0.5
+    ambienceOut.gain.value = ambienceMuted ? 0 : AMBIENCE_LEVEL
     ambience.connect(ambienceOut).connect(master)
     music.connect(master)
     return ctx.resume()
@@ -40,9 +43,16 @@ export function createAudioEngine() {
     }))
   }
 
+  // Silences every ambience layer at once without touching their individual levels.
+  function setAmbienceMuted(muted) {
+    ambienceMuted = muted
+    ambienceOut?.gain.setTargetAtTime(muted ? 0 : AMBIENCE_LEVEL, ctx.currentTime, 0.08)
+  }
+
   return {
     start,
     levels,
+    setAmbienceMuted,
     get ctx() { return ctx },
     get master() { return master },
     get music() { return music },

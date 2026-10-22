@@ -198,6 +198,30 @@ body.ui-hidden #ui { display: none; }
 .mute-button[data-muted='true'] .icon-muted { display: block; }
 .mute-button[data-muted='true'] { color: var(--pink); }
 
+/* Ambience panel: heading with the sound-effects switch beside it. Muted reads pink, like the
+   music mute, and the sliders dim but keep their values. */
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.panel-head h2 { margin: 0; }
+.effects-toggle { width: auto; height: 40px; gap: 8px; padding: 0 14px; font-size: 17px; }
+.effects-toggle svg { width: 18px; height: 18px; }
+.effects-toggle .icon-muted, .effects-toggle[data-muted='true'] .icon-sound { display: none; }
+.effects-toggle[data-muted='true'] .icon-muted { display: block; }
+.effects-toggle[aria-pressed='true'] { background: transparent; color: var(--pink); box-shadow: inset 0 0 0 2px var(--pink); }
+.sliders.muted { opacity: 0.45; transition: opacity 0.2s ease; }
+
+/* The dock's Ambience button wears a small pink badge while effects are muted. */
+.dock [data-panel='ambience'] { position: relative; }
+.dock [data-panel='ambience'][data-muted='true']::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--pink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
 /* Panel toggles, bottom right */
 .dock {
   position: fixed;
@@ -262,7 +286,46 @@ input[type='range']::-moz-range-thumb {
 }
 .picker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-right: 6px; }
 .picker-head h2 { margin-bottom: 14px; }
-.picker-count { font-size: 16px; color: var(--dim); }
+.picker-count { font-size: 16px; color: var(--dim); text-align: right; }
+
+/* Station tabs: one compact line each. The tab you're browsing is underlined in yellow; the station
+   that's playing carries a small pulsing "on air" dot. Every tab has the same height. */
+.station-tabs { display: flex; gap: 6px; margin: 0 6px 14px 0; }
+.station-tab {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 11px 12px;
+  font-size: 16px;
+  color: var(--dim);
+  background: var(--panel-sunken);
+  clip-path: var(--notch-small);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.station-tab:hover { background: var(--panel-raised); color: var(--text); }
+.station-tab[aria-selected='true'] { background: var(--panel-raised); color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+.station-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.station-count {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  font-size: 13px;
+  color: var(--dim);
+  background: rgba(0, 0, 0, 0.3);
+  clip-path: var(--notch-small);
+}
+.station-tab[aria-selected='true'] .station-count { color: var(--text); }
+.station-live {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--pink);
+  box-shadow: 0 0 6px var(--pink);
+  animation: on-air 1.6s steps(2) infinite;
+}
+@keyframes on-air { 50% { opacity: 0.35; } }
 .track-picker .track-list { overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: var(--edge-light) transparent; }
 .track-picker .track-list::-webkit-scrollbar { width: 8px; }
 .track-picker .track-list::-webkit-scrollbar-thumb { background: var(--edge-light); }
@@ -304,6 +367,7 @@ body[data-playing='true'] .eq i { animation: eq 0.9s steps(4) infinite; }
 .slider-value { font-size: 16px; color: var(--dim); text-align: right; }
 
 .segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 22px; }
+.segmented.two { grid-template-columns: 1fr 1fr; margin-bottom: 14px; }
 .time-row { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 16px; }
 .hour-readout { font-size: 28px; font-weight: 600; color: var(--accent); }
 .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 22px; }

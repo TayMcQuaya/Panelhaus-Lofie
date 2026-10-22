@@ -28,15 +28,15 @@ export const SYNTH_SONGS = [
   { title: 'Midnight Panels', mood: 'Late-night lofi', style: 'lofi', bpm: 80, swing: 0.2, chords: [[57, 60, 64, 67], [50, 53, 57, 60, 64], [55, 59, 62, 65], [48, 52, 55, 59, 62]], bass: [45, 38, 43, 36], scale: [57, 60, 62, 64, 67, 69, 72] },
   { title: 'Sponge Thoughts', mood: 'Mellow lofi', style: 'lofi', bpm: 76, swing: 0.14, chords: [[51, 55, 58, 62], [48, 51, 55, 58], [56, 60, 63, 67], [58, 62, 65, 68]], bass: [39, 36, 44, 46], scale: [63, 65, 67, 70, 72, 75] },
   // D dorian, two bars per chord: Dm(add9) - Bbmaj7 - G(add9) - Am7
-  { title: 'Graphite Drift', mood: 'Ambient focus', style: 'ambient', bpm: 60, seconds: 240, chords: [[50, 57, 60, 64], [46, 53, 57, 62], [43, 50, 55, 59, 62], [45, 52, 57, 60]], bass: [38, 34, 31, 33], scale: [74, 76, 77, 81, 84, 86] },
+  { title: 'Graphite Drift', mood: 'Ambient focus', style: 'ambient', bpm: 60, seconds: 240, gain: 1.4, chords: [[50, 57, 60, 64], [46, 53, 57, 62], [43, 50, 55, 59, 62], [45, 52, 57, 60]], bass: [38, 34, 31, 33], scale: [74, 76, 77, 81, 84, 86] },
   // Chiptune lofi: a soft square-wave arpeggio, triangle bass and a vibrato lead. Am7 - Fmaj7 - Cmaj7 - G6
   {
-    title: 'Panel by Panel', mood: 'Chiptune lofi', style: 'lofi', bpm: 78, swing: 0.1,
+    title: 'Panel by Panel', mood: 'Chiptune lofi', style: 'lofi', bpm: 78, swing: 0.1, gain: 1.6,
     chords: [[57, 60, 64, 67], [53, 57, 60, 64], [48, 52, 55, 59], [55, 59, 62, 64]], bass: [45, 41, 36, 43], scale: [69, 72, 74, 76, 79, 81],
     drums: 'soft', chordVoice: 'pulse', chordRhythm: 'arp', bassVoice: 'chip', lead: 'chip', leadChance: 0.32, leadOctave: 0, echoKeys: 0.25,
   },
   // A minor, two bars per chord: Am - G - F - Em
-  { title: 'Night Shift Dub', mood: 'Slow dub', style: 'dub', bpm: 66, seconds: 210, chords: [[57, 60, 64], [55, 59, 62], [53, 57, 60], [52, 55, 59]], bass: [33, 31, 29, 28], scale: [69, 72, 74, 76, 79] },
+  { title: 'Night Shift Dub', mood: 'Slow dub', style: 'dub', bpm: 66, seconds: 210, gain: 1.7, chords: [[57, 60, 64], [55, 59, 62], [53, 57, 60], [52, 55, 59]], bass: [33, 31, 29, 28], scale: [69, 72, 74, 76, 79] },
   // D major, bright and bouncy: Dmaj9 - Bm7 - Gmaj7 - A6
   {
     title: 'Morning Ink', mood: 'Sunny lofi', style: 'lofi', bpm: 86, swing: 0.18,
@@ -51,25 +51,25 @@ export const SYNTH_SONGS = [
   },
   // G major bossa: Gmaj7 - Em7 - Am7 - D9
   {
-    title: 'Cocoa Bossa', mood: 'Lofi bossa', style: 'lofi', bpm: 84, swing: 0,
+    title: 'Cocoa Bossa', mood: 'Lofi bossa', style: 'lofi', bpm: 84, swing: 0, gain: 0.9,
     chords: [[54, 59, 62, 66], [52, 55, 59, 62], [55, 60, 64, 67], [54, 57, 60, 64]], bass: [43, 40, 45, 38], scale: [67, 69, 71, 74, 76, 79],
     drums: 'bossa', chordVoice: 'pluck', chordRhythm: 'bossa', bassVoice: 'upright', bassRhythm: 'bossa', leadChance: 0.1,
   },
   // Db major, slow and warm: Dbmaj9 - Bbm9 - Gbmaj7 - Ab7sus
   {
-    title: 'Lamp Light', mood: 'Warm & slow', style: 'lofi', bpm: 62, swing: 0.12, seconds: 200,
+    title: 'Lamp Light', mood: 'Warm & slow', style: 'lofi', bpm: 62, swing: 0.12, seconds: 200, gain: 0.72,
     chords: [[53, 56, 60, 63], [49, 53, 56, 60], [53, 58, 61, 65], [51, 54, 56, 61]], bass: [37, 34, 30, 32], scale: [73, 75, 77, 80, 82],
     drums: 'half', bassVoice: 'sub', bassRhythm: 'half', lead: 'musicBox', leadChance: 0.1, leadOctave: 0, padLayer: true,
   },
   // F major lullaby on a soft harp-like arpeggio: Fmaj9 - Em7 - Dm9 - Gsus
   {
-    title: 'Cat Nap', mood: 'Sleepy lofi', style: 'lofi', bpm: 70, swing: 0.12,
+    title: 'Cat Nap', mood: 'Sleepy lofi', style: 'lofi', bpm: 70, swing: 0.12, gain: 1.4,
     chords: [[57, 60, 64, 67], [55, 59, 62, 64], [53, 57, 60, 64], [55, 60, 62, 67]], bass: [41, 40, 38, 43], scale: [72, 74, 77, 79, 81],
     drums: 'soft', chordVoice: 'pluck', chordRhythm: 'arp', lead: 'musicBox', leadChance: 0.1, leadOctave: 0,
   },
   // C minor, neon and spacey: Cm9 - Abmaj7 - Ebmaj7 - Bb6
   {
-    title: 'City Lights', mood: 'Neon lofi', style: 'lofi', bpm: 80, swing: 0.15,
+    title: 'City Lights', mood: 'Neon lofi', style: 'lofi', bpm: 80, swing: 0.15, gain: 0.8,
     chords: [[51, 55, 58, 62], [51, 55, 56, 60], [51, 55, 58, 62], [50, 53, 55, 58]], bass: [36, 32, 39, 34], scale: [72, 75, 77, 79, 82],
     chordRhythm: 'push', bassVoice: 'sub', lead: null, echoKeys: 0.4, padLayer: true,
   },
@@ -210,12 +210,13 @@ export function createSynthPlayer(ctx, output) {
     osc.start(t); osc.stop(t + dur + 0.3)
   }
 
-  // Deep sub bass that holds the root.
-  function sub(t, midi, dur) {
+  // Deep sub bass that holds the root. Full weight in the sparse dub; much lighter under a lofi
+  // band, where it would otherwise swamp the mix.
+  function sub(t, midi, dur, level = 0.34) {
     const amp = ctx.createGain()
     amp.gain.setValueAtTime(0.0001, t)
-    amp.gain.exponentialRampToValueAtTime(0.34, t + 0.04)
-    amp.gain.setValueAtTime(0.34, t + dur * 0.8)
+    amp.gain.exponentialRampToValueAtTime(level, t + 0.04)
+    amp.gain.setValueAtTime(level, t + dur * 0.8)
     amp.gain.exponentialRampToValueAtTime(0.0001, t + dur)
     const osc = voice('sine', mtof(midi))
     osc.connect(lowpass(220)).connect(amp).connect(songOut)
@@ -223,11 +224,11 @@ export function createSynthPlayer(ctx, output) {
   }
 
   // Upright bass: round sine and triangle with a soft thump at the front.
-  function upright(t, midi, dur) {
+  function upright(t, midi, dur, level = 0.26) {
     const amp = ctx.createGain()
     amp.gain.setValueAtTime(0.0001, t)
-    amp.gain.exponentialRampToValueAtTime(0.26, t + 0.02)
-    amp.gain.exponentialRampToValueAtTime(0.08, t + dur)
+    amp.gain.exponentialRampToValueAtTime(level, t + 0.02)
+    amp.gain.exponentialRampToValueAtTime(level * 0.3, t + dur)
     amp.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12)
     const filter = lowpass(650)
     filter.connect(amp).connect(songOut)
@@ -408,7 +409,9 @@ export function createSynthPlayer(ctx, output) {
   }
 
   function lofiBass(inBar, t, swung, root) {
-    const play = { round: roundBass, sub, upright, chip: chipBass }[song.bassVoice]
+    const lofiSub = (time, midi, dur) => sub(time, midi, dur, 0.12)
+    const lofiUpright = (time, midi, dur) => upright(time, midi, dur, 0.14)
+    const play = { round: roundBass, sub: lofiSub, upright: lofiUpright, chip: chipBass }[song.bassVoice]
     switch (song.bassRhythm) {
       case 'bossa':
         if (inBar === 0) play(t, root, stepDur * 3)
@@ -552,7 +555,7 @@ export function createSynthPlayer(ctx, output) {
     tone.connect(songOut)
     echoLoop = { delay, feedback }
     songOut.gain.setValueAtTime(0.0001, ctx.currentTime)
-    songOut.gain.exponentialRampToValueAtTime(SONG_LEVEL, ctx.currentTime + 0.8)
+    songOut.gain.exponentialRampToValueAtTime(SONG_LEVEL * (song.gain ?? 1), ctx.currentTime + 0.8)
     const lfo = voice('sine', 0.35)
     const depth = gain(7)
     lfo.connect(depth)

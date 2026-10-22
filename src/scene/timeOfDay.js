@@ -41,22 +41,26 @@ function arcPosition(progress, lowY, highY) {
   return { x: lerp(110, 246, progress), y: lowY - Math.sin(progress * Math.PI) * (lowY - highY) }
 }
 
-export function timeOfDay(hour, weather) {
+// `mix` holds how much of each weather is showing (they sum to 1), so a change of weather fades the
+// sky and light over a few seconds instead of snapping.
+export function timeOfDay(hour, weather, mix = { [weather]: 1 }) {
   const h = ((hour % 24) + 24) % 24
   const base = sample(h)
-  const overcast = OVERCAST[weather] ?? 0
+  const share = (w) => mix[w] ?? 0
+  const overcast = Object.entries(OVERCAST).reduce((sum, [w, amount]) => sum + amount * share(w), 0)
   const night = 1 - base.daylight
 
   const greyTop = mixRgb([112, 120, 138], [20, 20, 34], night)
   const greyBottom = mixRgb([150, 156, 170], [34, 32, 52], night)
-  const snowTint = weather === 'snow' ? 0.15 : 0
+  const snowTint = 0.15 * share('snow')
   const top = mixRgb(base.top, greyTop, overcast * 0.85)
   const bottom = mixRgb(mixRgb(base.bottom, greyBottom, overcast * 0.85), [230, 232, 245], snowTint * base.daylight)
   const cloud = mixRgb(base.cloud, mixRgb([170, 174, 188], [40, 40, 58], night), overcast * 0.7)
 
-  const dim = 1 - overcast * (weather === 'snow' ? 0.08 : 0.28)
+  // Snow dims the room far less than rain: the white outside throws light back in.
+  const dim = 1 - Object.entries(OVERCAST).reduce((sum, [w, amount]) => sum + amount * share(w) * (w === 'snow' ? 0.08 : 0.28), 0)
   const ambient = base.ambient.map((c) => c * dim)
-  if (weather === 'snow') ambient[2] *= 1.05
+  ambient[2] *= 1 + 0.05 * share('snow')
 
   const sunProgress = (h - 5.8) / 13.2
   const moonProgress = (((h - 19.2) % 24) + 24) % 24 / 10.8

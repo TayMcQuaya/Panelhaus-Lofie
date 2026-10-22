@@ -4,6 +4,19 @@
 export const FLOOR_Y = 232
 export const FRONT_FLOOR_Y = FLOOR_Y + 17
 
+// One-point perspective shared by everything with depth: the eye sits level with the middle of the
+// window, centred on the room. VIEW_DEPTH is the eye's distance to the back wall in wall pixels,
+// matched to the desk top and the stool (FRONT_FLOOR_Y is ~70 px in front of the wall).
+export const VANISH = { x: 240, y: 100 }
+export const VIEW_DEPTH = 540
+
+// Where a point drawn at the front of an object lies `depth` pixels further back (toward the wall):
+// it slides toward the vanishing point. Used for top surfaces, side panels and floorboards.
+export function recede(x, y, depth) {
+  const k = VIEW_DEPTH / (VIEW_DEPTH + depth)
+  return [VANISH.x + (x - VANISH.x) * k, VANISH.y + (y - VANISH.y) * k]
+}
+
 export const GLASS = { x: 106, y: 36, w: 144, h: 102 }
 export const PANES = [
   { x: 106, y: 36, w: 70, h: 49 },
@@ -56,6 +69,8 @@ export const BOARD = [
 export const DESK_REST = { left: { x: 168, y: 165 }, right: { x: 245, y: 166 } }
 export const INK_JAR = { x: 261, y: 157, mouthX: 264, mouthY: 157 }
 export const MUG_HOME = { x: 173, y: 156 }
+// The wire bin under the desk: centre, rim height and the rim's oval (seen a little from above).
+export const BIN = { cx: 270, top: 214, rimRx: 8.5, rimRy: 2.2, openingRx: 7, openingRy: 1.3 }
 export const CRATE = { x: 150, y: FRONT_FLOOR_Y - 27, w: 22, h: 27 }
 export const CAT_SPOT = { x: 130, y: 132 }
 export const LAMP = { baseX: 286, baseY: 164, elbowX: 290, elbowY: 128, headX: 272, headY: 119, bulbX: 270, bulbY: 124 }
@@ -68,8 +83,11 @@ export const CORK_SLOTS = [0, 1].flatMap((row) =>
 export const CLOCK = { x: 436, y: 38 }
 export const POSTER = { x: 412, y: 62, w: 48, h: 66 }
 export const CABINET = { x: 304, y: 194, w: 88, h: 38 }
-export const RECORD = { x: 326, y: 185 }
-// Lava lamp at the right end of the cabinet: glass from glassTop to baseY - 8.
-export const LAVA = { x: 385, baseY: 194, glassTop: 166 }
+// Things on the cabinet stand on the middle of its visible top, a little behind its front edge.
+export const CABINET_SURFACE_Y = CABINET.y - 2
+export const RECORD = { x: 326, y: CABINET_SURFACE_Y - 9 }
+// Lava lamp toward the right end of the cabinet: glass from glassTop to baseY - 8.
+export const LAVA = { x: 382, baseY: CABINET_SURFACE_Y, glassTop: CABINET_SURFACE_Y - 28 }
 export const SHELF = { x: 8, y: 46, w: 66 }
-export const FIGURINE = { x: 62, y: 141 }
+// The little Smudge figurine in its glass case on the bookshelf (its night glow is centred here too).
+export const FIGURINE = { x: 59, y: 141 }
