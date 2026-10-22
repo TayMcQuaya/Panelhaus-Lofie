@@ -119,8 +119,13 @@ export function createMusicPlayer(engine) {
   function pause() {
     if (!playing) return
     playing = false
-    if (element) element.pause()
-    else stopCurrent()
+    if (element) {
+      element.pause()
+    } else {
+      // A generated song can't be paused, so remember where it was and resume from there.
+      if (synthOn) pendingOffset = synth.elapsed() % synthLength()
+      stopCurrent()
+    }
     emit()
   }
 

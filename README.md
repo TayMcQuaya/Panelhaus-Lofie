@@ -62,8 +62,8 @@ The controls fade after 3 seconds without mouse movement. Settings are remembere
 ## Your music and sounds
 
 - Music: see [public/music/README.md](public/music/README.md). Put files in `public/music/` and list them in
-  `tracks.json`. The six built-in Smudge FM songs are generated live in the browser (lofi beats, ambient,
-  brushed jazz, slow dub).
+  `tracks.json`. The twelve built-in Smudge FM songs are generated live in the browser (lofi beats,
+  ambient, chiptune lofi, dub, bossa and more); they are defined in `src/audio/synthTracks.js`.
 - Ambience: see [public/ambience/README.md](public/ambience/README.md). Drop `rain.mp3`, `thunder.mp3`,
   `city.mp3`, `clock.mp3` or `purr.mp3` there to replace a synthesised layer.
 
@@ -74,7 +74,7 @@ The controls fade after 3 seconds without mouse movement. Settings are remembere
 | `t` | `?t=22` | Hold the scene at an hour (0-23.99) |
 | `weather` | `?weather=storm` | Start with a weather |
 | `act` | `?act=coffee` | Start Smudge on an activity: `think`, `stretch`, `glance`, `coffee`, `breathe`, `show`, `dip`, `reject`, `tidy` |
-| `track` | `?track=3` | Start on a given song (0-5) |
+| `track` | `?track=3` | Start on a given song (0-11) |
 | `levels` | `?levels=1` | Log music vs ambience loudness to the console |
 | `skip` | `?act=breathe&skip=4` | Fast-forward the simulation by that many seconds before the first frame |
 | `panel` | `?panel=weather` | Open a panel on load |

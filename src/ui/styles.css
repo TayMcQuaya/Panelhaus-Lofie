@@ -1,3 +1,13 @@
+/* Pixelify Sans draws its "5" like an "S" or a mirrored "2", so the digits 0-9 come from Jersey 10
+   (OFL-1.1), scaled to Pixelify's height. unicode-range makes the browser take only digits from it. */
+@font-face {
+  font-family: 'Pixel Digits';
+  src: url('../assets/fonts/jersey-10-digits.woff2') format('woff2');
+  unicode-range: U+0030-0039;
+  size-adjust: 118%;
+  font-display: swap;
+}
+
 /* Pixel-art UI that belongs to the scene: solid plum panels with notched corners and a two-tone
    frame, chunky bevelled buttons, cream type, Smudge-yellow accents. Controls hug the corners so
    Smudge at the bottom centre is never covered, and everything fades when the mouse rests. */
@@ -17,7 +27,7 @@
   --teal: #6ee6d2;
   --ink: #1a1426;
   --gap: 24px;
-  --font: 'Pixelify Sans', ui-monospace, 'Courier New', monospace;
+  --font: 'Pixel Digits', 'Pixelify Sans', ui-monospace, 'Courier New', monospace;
   --notch: polygon(
     0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
     calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
