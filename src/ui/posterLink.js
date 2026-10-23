@@ -3,7 +3,7 @@
 // back into scene pixels and tested against the poster's rectangle.
 import { POSTER } from '../scene/layout.js'
 
-export const GAME_URL = 'https://mjons.github.io/DayoftheSmudgies/'
+export const GAME_URL = 'https://panel.haus/smudgies/play/'
 const HIGHLIGHT = '#ffd84a'
 
 function isOverPoster({ x, y }) {
