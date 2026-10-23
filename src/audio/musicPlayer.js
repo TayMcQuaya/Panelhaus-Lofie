@@ -7,6 +7,12 @@
 import { SYNTH_SONGS, createSynthPlayer, songSeconds } from './synthTracks.js'
 
 const BASE = import.meta.env.BASE_URL
+// Where song FILES stream from. The page is also served at panel.haus/lofi/ (a Vercel rewrite to
+// this GitHub Pages site), and the songs are most of the bytes, so in a production build they come
+// straight from GitHub Pages, which is free, instead of through panel.haus. GitHub Pages sends
+// `Access-Control-Allow-Origin: *`, which Web Audio needs to hear a file from another origin.
+// tracks.json and the page itself still load from wherever the page is, since they are tiny.
+const MUSIC_FILES_BASE = import.meta.env.PROD ? 'https://taymcquaya.github.io/Panelhaus-Lofie/' : BASE
 const AUDIO_FILE = /^(https:\/\/[^\s"'<>]+|[\w\-./ ]+)\.(mp3|ogg|m4a|wav|aac|flac)$/i
 const STATION_ID = /^[a-z0-9-]{1,40}$/
 const PREFETCH_SECONDS = 20
@@ -76,7 +82,22 @@ async function loadLibrary() {
   return validateLibrary(parsed) ?? defaultLibrary()
 }
 
-const resolveSrc = (src) => (src.startsWith('https://') ? src : `${BASE}music/${src.replace(/^\/+/, '')}`)
+const resolveSrc = (src) =>
+  src.startsWith('https://') ? src : `${MUSIC_FILES_BASE}music/${src.replace(/^\/+/, '')}`
+
+// A file from another origin must be requested with CORS, or Web Audio plays it silent. Judged on
+// the RESOLVED address, because a plain file name in tracks.json now resolves to GitHub Pages too.
+const needsCors = (url) => new URL(url, location.href).origin !== location.origin
+
+/** An <audio> for a song file, with CORS set BEFORE the address so the first request carries it. */
+function audioFor(src) {
+  const url = resolveSrc(src)
+  const audio = new Audio()
+  audio.preload = 'auto'
+  if (needsCors(url)) audio.crossOrigin = 'anonymous'
+  audio.src = url
+  return audio
+}
 
 export function createMusicPlayer(engine) {
   let library = defaultLibrary()
@@ -128,10 +149,7 @@ export function createMusicPlayer(engine) {
   }
 
   function playFile(track) {
-    const audio = new Audio()
-    audio.preload = 'auto'
-    if (track.src.startsWith('https://')) audio.crossOrigin = 'anonymous'
-    audio.src = resolveSrc(track.src)
+    const audio = audioFor(track.src)
     element = audio
     const source = engine.ctx.createMediaElementSource(audio)
     const trim = engine.ctx.createGain()
@@ -280,10 +298,8 @@ export function createMusicPlayer(engine) {
     const track = tracks()[upcoming]
     if (!track.src || prefetched === track.src) return
     prefetched = track.src
-    const warm = new Audio()
-    warm.preload = 'auto'
-    if (track.src.startsWith('https://')) warm.crossOrigin = 'anonymous'
-    warm.src = resolveSrc(track.src)
+    // Same CORS mode as playFile, or the browser cannot reuse this buffered copy.
+    audioFor(track.src)
   }
 
   // Called every frame.
