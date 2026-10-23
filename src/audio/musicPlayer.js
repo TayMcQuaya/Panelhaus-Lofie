@@ -7,11 +7,11 @@
 import { SYNTH_SONGS, createSynthPlayer, songSeconds } from './synthTracks.js'
 
 const BASE = import.meta.env.BASE_URL
-// Where song FILES stream from. The page is also served at panel.haus/lofi/ (a Vercel rewrite to
-// this GitHub Pages site), and the songs are most of the bytes, so in a production build they come
-// straight from GitHub Pages, which is free, instead of through panel.haus. GitHub Pages sends
-// `Access-Control-Allow-Origin: *`, which Web Audio needs to hear a file from another origin.
-// tracks.json and the page itself still load from wherever the page is, since they are tiny.
+// Where song FILES stream from: always this GitHub Pages site in a production build, wherever the
+// page itself is served. panel.haus/lofi/ is a redirect here today, so this is same-origin; if the
+// page ever moves to another address, the songs (most of the bytes) still stream from GitHub Pages,
+// which is free. GitHub Pages sends `Access-Control-Allow-Origin: *`, which Web Audio needs to hear
+// a file from another origin. tracks.json and the page load from wherever the page is.
 const MUSIC_FILES_BASE = import.meta.env.PROD ? 'https://taymcquaya.github.io/Panelhaus-Lofie/' : BASE
 const AUDIO_FILE = /^(https:\/\/[^\s"'<>]+|[\w\-./ ]+)\.(mp3|ogg|m4a|wav|aac|flac)$/i
 const STATION_ID = /^[a-z0-9-]{1,40}$/
