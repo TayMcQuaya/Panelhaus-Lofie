@@ -81,7 +81,7 @@ Every prop is drawn against this table, so nothing looks toy-sized next to him.
 3. Weather seen through the window: rain streaks, snow, lightning; drops running down the glass.
 4. Window frame and sill: plant, steaming mug, sleeping cat (on the sill by day, on the rug at night).
 5. Wall: wood wainscot and wallpaper, shelves of comics and ink jars, a corkboard where finished pages
-   get pinned, fairy lights, a "SMUDGE AND THE SMUDGIES #1" poster, a clock that shows the real time.
+   get pinned, fairy lights, a "DAY OF THE SMUDGIES #1" poster (clicking it opens the game), a clock that shows the real time.
 6. Floor: wood planks, rug, record player whose vinyl spins while music plays, comic stacks, a bin with
    crumpled paper balls, an ink stain that grows slowly from Smudge's drips.
 7. Drafting table, tilted towards the camera so the page reads as a slanted rectangle, with a desk lamp.

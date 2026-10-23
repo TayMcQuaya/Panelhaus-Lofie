@@ -7,6 +7,7 @@ import { createMusicPlayer } from './audio/musicPlayer.js'
 import { attachDisplay, H, makeLayer, W } from './engine/canvas.js'
 import { createScene } from './scene/scene.js'
 import { createControls } from './ui/controls.js'
+import { createPosterLink } from './ui/posterLink.js'
 import { loadSettings, saveSettings, TIME_MODES, WEATHER_MODES, WEATHERS } from './ui/settings.js'
 
 const WEATHER_AMBIENCE = {
@@ -200,6 +201,7 @@ const cropping = crop?.length === 3 && crop.every(Number.isFinite)
 const canvas = document.getElementById('scene')
 const { ctx, view } = attachDisplay(canvas, { fixed: cropping })
 const frameLayer = makeLayer(W, H)
+const posterLink = createPosterLink(canvas, view)
 if (cropping) {
   const [cx, cy, cs] = crop
   Object.assign(canvas.style, { position: 'fixed', left: `${-cx * cs}px`, top: `${-cy * cs}px`, width: `${480 * cs}px`, height: `${270 * cs}px` })
@@ -250,6 +252,7 @@ function frame(now) {
     scene.update(dt / steps, world)
   }
   scene.render(frameLayer.ctx, world)
+  posterLink.drawHighlight(frameLayer.ctx)
   if (view.width !== W || view.height !== H) scene.renderShell(ctx, world, view)
   ctx.drawImage(frameLayer.canvas, view.offsetX, view.offsetY)
   if (perf) recordPerf(performance.now() - workStart)
